@@ -45,7 +45,6 @@ Life.prototype.calculateTurn = function(){
         for (var y = 0; y < this.height; y++) {
             neigbours = this.getAliveNeighbours(x, y);
             state = this.state[x][y];
-            this.stateNext.push(Array(this.height));
             // в пустой (мёртвой) клетке, рядом с которой ровно три живые клетки, зарождается жизнь
             if (state === 0 && neigbours === 3) {
                 this.stateNext[x][y] = 1;
@@ -60,25 +59,30 @@ Life.prototype.calculateTurn = function(){
             }
         }
     }
-    this.state = this.stateNext;
-    this.stateNext = [];
+
+    // Copy next state to current state _by values_
+    this.state = this.stateNext.map(
+        function(column){ return column.slice(0);
+    });
 };
 
 Life.prototype.drawState = function(timestamp){
     var state;
     var x, y;
-    this.ctx.fillStyle = '#fff';
+    this.ctx.fillStyle = '#eee';
     this.ctx.fillRect(0,0, this.width * this.cellSize, this.height * this.cellSize);
-    this.ctx.fillStyle = '#000';
 
     for (x = 0; x < this.width; x++) {
         for (y = 0; y < this.height; y++) {
             state = this.state[x][y];
-            if (state){
+            if (state) {
+                this.ctx.fillStyle = '#333';
                 this.ctx.fillRect(
                     x * this.cellSize, y * this.cellSize,
                     this.cellSize, this.cellSize
                 );
+                this.ctx.fillStyle = '#777';
+                this.ctx.fillRect(x * this.cellSize, y * this.cellSize, 1, 1);
             }
         }
     }
@@ -88,15 +92,17 @@ Life.prototype.getCell = function(x, y){
     if (x >= this.width) {
         x = this.width - x;
     }
+    else if (x < 0) {
+        x = this.width + x;
+    }
+
     if (y >= this.height) {
         y = this.height - y;
     }
-    if (x < 0) {
-        x = this.width + x;
-    }
-    if (y < 0) {
+    else if (y < 0) {
         y = this.height + y;
     }
+
     return this.state[x][y];
 };
 
@@ -114,6 +120,6 @@ var l = new Life({
     cellSize: 2, // pixels
     width: 400, // cells
     height: 300, // cells
-    turnTime: 2000, // ms,
+    turnTime: 1000, // ms,
     randomThreshold: 0.5 // chance
 });
